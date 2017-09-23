@@ -12,11 +12,15 @@ if (environment == 'aws'){
     var sns = new AWS.SNS();
 }
 
+var today = new Date();
 var now = Math.floor(new Date() / 1000);
-var comparedate = now - 86400;
-var comparedate_string = new Date(comparedate);
+var comparedate = now - 172800;
+// Convert to milliseconds
+var comparedate_string = new Date(comparedate *1000);
 
-winston.level =  process.env.winston || 'info'
+winston.info(chalk.yellow('Update Tv status function began at ' + today));
+
+winston.level =  process.env.winston || 'info';
 
 function updateTV(){
     let p1 = new Promise((resolve, reject) => { 
@@ -62,9 +66,10 @@ function updateTV(){
     Promise.all([p1, p2]).then(values => { 
         var i = 0;
         async.each(values[1], function(result, callback){
-            winston.log('verbose', chalk.cyan(result.title, " ", result.status, " ", result.id, " ", result.imdb));
-            if (values[0].includes(result.tvmaze) ){
-                winston.info(chalk.yellow(result.title, ' has been updated after ', comparedate_string))                
+            winston.log('verbose', chalk.cyan(result.title, " ", result.status, " ", result.id, " ", result.imdb, ' ', result.tvmaze));
+            var tvmazeint = result.tvmaze.toString();
+            if (values[0].includes(tvmazeint) ){
+                winston.info(chalk.yellow(result.title, ' has been updated after ', comparedate_string));                
                 setTimeout(function(){
                     var url = null;
                     url = 'http://api.tvmaze.com/lookup/shows?imdb=' + result.imdb
